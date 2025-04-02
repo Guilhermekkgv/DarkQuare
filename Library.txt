@@ -105,19 +105,10 @@ function Library.Main(Name)
         BorderSizePixel = 0,
         Position = UDim2.new(1, -35, 0, 5),
         Size = UDim2.new(0, 30, 0, 30),
-        Text = "",
-        ZIndex = 4
-    })
-
-    local ToggleIcon = CreateModule.Instance("ImageLabel", {
-        Parent = ToggleButton,
-        Name = "ToggleIcon",
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 1, 0),
-        Image = "rbxassetid://10709762574",
-        ImageColor3 = Library.Theme.FontColor,
+        Font = Enum.Font[Library.Theme.Font],
+        Text = "▼",
+        TextColor3 = Library.Theme.FontColor,
+        TextSize = 20,
         ZIndex = 4
     })
 
@@ -162,14 +153,14 @@ function Library.Main(Name)
     local function ToggleLibrary()
         IsOpen = not IsOpen
         if IsOpen then
-            ToggleIcon.Image = "rbxassetid://10747796644"
+            ToggleButton.Text = "▼"
             TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 300, 0, 300)}):Play()
             TweenService:Create(Container, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 1, -50)}):Play()
             TweenService:Create(Container, TweenInfo.new(0.3), {CanvasPosition = Vector2.new(0, 0)}):Play()
             Container.Visible = true
             TitleLine.Visible = true
         else
-            ToggleIcon.Image = "rbxassetid://10709762574"
+            ToggleButton.Text = "◄"
             TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 300, 0, 40)}):Play()
             TweenService:Create(Container, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 0, 0)}):Play()
             Container.Visible = false
@@ -304,7 +295,7 @@ function Library.Main(Name)
     function InMain.Label(config)
         local Label = CreateModule.Instance("TextLabel", {
             Parent = Container,
-            Name = config.Name,
+            Name = "Label",
             BackgroundColor3 = Library.Theme.Element,
             BackgroundTransparency = Library.Theme.ElementTransparency,
             BorderSizePixel = 0,
@@ -339,7 +330,7 @@ function Library.Main(Name)
     function InMain.Button(config)
         local Button = CreateModule.Instance("TextButton", {
             Parent = Container,
-            Name = config.Name,
+            Name = "Button",
             BackgroundColor3 = Library.Theme.Element,
             BackgroundTransparency = Library.Theme.ElementTransparency,
             BorderSizePixel = 0,
