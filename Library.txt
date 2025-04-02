@@ -13,7 +13,9 @@ local Library = {
         InElementBorder = Color3.fromRGB(55, 55, 55),
         ElementTransparency = 0.82,
         FontColor = Color3.fromRGB(255, 255, 255),
-        HideKey = "LeftAlt"
+        HideKey = "LeftAlt",
+        DialogInput = Color3.fromRGB(45, 45, 45),
+        DialogInputLine = Color3.fromRGB(120, 120, 120)
     }
 }
 
@@ -107,8 +109,9 @@ function Library.Main(Name)
         Size = UDim2.new(1, -20, 1, -50),
         CanvasSize = UDim2.new(0, 0, 0, 0),
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        ScrollBarThickness = 0,
-        ScrollingEnabled = true,
+        ScrollBarThickness = 3,
+        ScrollBarImageTransparency = 0.9,
+        ScrollBarImageColor3 = Library.Theme.FontColor,
         ZIndex = 3
     })
 
@@ -118,6 +121,10 @@ function Library.Main(Name)
         HorizontalAlignment = Enum.HorizontalAlignment.Center,
         SortOrder = Enum.SortOrder.LayoutOrder
     })
+
+    ElementList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Container.CanvasSize = UDim2.new(0, 0, 0, ElementList.AbsoluteContentSize.Y + 4)
+    end)
 
     InputService.InputBegan:Connect(function(input, IsTyping)
         if input.KeyCode == Enum.KeyCode[Library.Theme.HideKey] and not IsTyping then
@@ -225,13 +232,13 @@ function Library.Main(Name)
                 TweenService:Create(CheckMark, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
             end
             spawn(function() config.Callback(IsActive.Value) end)
-        })
+        end)
 
         Checkbox.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.Touch then
                 IsActive.Value = not IsActive.Value
             end
-        })
+        end)
 
         AddToReg(Checkbox)
         return Checkbox
@@ -240,7 +247,7 @@ function Library.Main(Name)
     function InMain.Label(config)
         local Label = CreateModule.Instance("TextLabel", {
             Parent = Container,
-            Name = "Label",
+            Name = config.Name,
             BackgroundColor3 = Library.Theme.Element,
             BackgroundTransparency = Library.Theme.ElementTransparency,
             BorderSizePixel = 0,
@@ -275,7 +282,7 @@ function Library.Main(Name)
     function InMain.Button(config)
         local Button = CreateModule.Instance("TextButton", {
             Parent = Container,
-            Name = "Button",
+            Name = config.Name,
             BackgroundColor3 = Library.Theme.Element,
             BackgroundTransparency = Library.Theme.ElementTransparency,
             BorderSizePixel = 0,
@@ -308,19 +315,19 @@ function Library.Main(Name)
             if input.UserInputType == Enum.UserInputType.Touch then
                 TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Library.Theme.Accent, BackgroundTransparency = 0}):Play()
             end
-        })
+        end)
 
         Button.InputEnded:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.Touch then
                 TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Library.Theme.Element, BackgroundTransparency = Library.Theme.ElementTransparency}):Play()
             end
-        })
+        end)
 
         Button.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.Touch then
                 spawn(function() config.Callback() end)
             end
-        })
+        end)
 
         AddToReg(Button)
         return Button
@@ -330,49 +337,62 @@ function Library.Main(Name)
         local Input = CreateModule.Instance("Frame", {
             Parent = Container,
             Name = config.Name,
-            BackgroundColor3 = Library.Theme.Element,
-            BackgroundTransparency = Library.Theme.ElementTransparency,
+            BackgroundTransparency = 1,
             BorderSizePixel = 0,
+            Position = UDim2.new(0, 0, 0, 0),
             Size = UDim2.new(0.95, 0, 0, 30),
             ZIndex = 3
         })
 
-        CreateModule.Instance("UICorner", {
+        CreateModule.Instance("TextLabel", {
             Parent = Input,
+            Name = "Label",
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Position = UDim2.new(0, 5, 0, 0),
+            Size = UDim2.new(0.4, 0, 1, 0),
+            Font = Enum.Font[Library.Theme.Font],
+            Text = config.Name,
+            TextSize = 16,
+            TextColor3 = Library.Theme.FontColor,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 3
+        })
+
+        local TextBox = CreateModule.Instance("TextBox", {
+            Parent = Input,
+            Name = "TextBox",
+            BackgroundColor3 = Library.Theme.DialogInput,
+            BorderSizePixel = 0,
+            Position = UDim2.new(0.45, 0, 0.5, -10),
+            Size = UDim2.new(0.5, 0, 0, 20),
+            Font = Enum.Font[Library.Theme.Font],
+            Text = config.Default or "",
+            TextSize = 14,
+            TextColor3 = Library.Theme.FontColor,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            ZIndex = 3
+        })
+
+        CreateModule.Instance("UICorner", {
+            Parent = TextBox,
             Name = "Corner",
             CornerRadius = UDim.new(0, 4)
         })
 
         CreateModule.Instance("UIStroke", {
-            Parent = Input,
+            Parent = TextBox,
             Name = "Stroke",
             Thickness = 1,
-            Color = Library.Theme.ElementBorder,
+            Color = Library.Theme.DialogInputLine,
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
 
-        local InputField = CreateModule.Instance("TextBox", {
-            Parent = Input,
-            Name = "InputField",
-            BackgroundTransparency = 1,
-            BorderSizePixel = 0,
-            Position = UDim2.new(0, 5, 0, 0),
-            Size = UDim2.new(1, -10, 1, 0),
-            Font = Enum.Font[Library.Theme.Font],
-            Text = config.Default or "",
-            PlaceholderText = config.Name,
-            TextSize = 16,
-            TextColor3 = Library.Theme.FontColor,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            ClearTextOnFocus = false,
-            ZIndex = 3
-        })
-
-        InputField.FocusLost:Connect(function(enterPressed)
+        TextBox.FocusLost:Connect(function(enterPressed)
             if enterPressed then
-                spawn(function() config.Callback(InputField.Text) end)
+                spawn(function() config.Callback(TextBox.Text) end)
             end
-        })
+        end)
 
         AddToReg(Input)
         return Input
