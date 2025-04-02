@@ -57,7 +57,7 @@ function Library.Main(Name)
         Position = UDim2.new(0.5, -150, 0.5, -150),
         Size = UDim2.new(0, 300, 0, 300),
         Active = true,
-        Draggable = true,
+        Draggable = false,
         Visible = false,
         ZIndex = 3
     })
@@ -126,19 +126,51 @@ function Library.Main(Name)
         Container.CanvasSize = UDim2.new(0, 0, 0, ElementList.AbsoluteContentSize.Y + 4)
     end)
 
-    local isDragging = false
+    local isDraggingUI = false
+    local isScrolling = false
     local lastTouchPos = nil
     local scrollSpeed = 2
+    local dragStartPos = nil
+    local dragStartFramePos = nil
+
+    Title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDraggingUI = true
+            dragStartPos = input.Position
+            dragStartFramePos = MainFrame.Position
+        end
+    end)
+
+    Title.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and isDraggingUI then
+            local delta = input.Position - dragStartPos
+            local newPos = UDim2.new(
+                dragStartFramePos.X.Scale,
+                dragStartFramePos.X.Offset + delta.X,
+                dragStartFramePos.Y.Scale,
+                dragStartFramePos.Y.Offset + delta.Y
+            )
+            MainFrame.Position = newPos
+        end
+    end)
+
+    Title.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDraggingUI = false
+            dragStartPos = nil
+            dragStartFramePos = nil
+        end
+    end)
 
     Container.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            isDragging = true
+        if input.UserInputType == Enum.UserInputType.Touch and not isDraggingUI then
+            isScrolling = true
             lastTouchPos = input.Position.Y
         end
     end)
 
     Container.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch and isDragging then
+        if input.UserInputType == Enum.UserInputType.Touch and isScrolling then
             local currentTouchPos = input.Position.Y
             local delta = (lastTouchPos - currentTouchPos) * scrollSpeed
             local newCanvasPos = Container.CanvasPosition.Y + delta
@@ -150,7 +182,7 @@ function Library.Main(Name)
 
     Container.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch then
-            isDragging = false
+            isScrolling = false
             lastTouchPos = nil
         end
     end)
