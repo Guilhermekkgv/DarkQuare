@@ -29,32 +29,25 @@ local function AddToReg(Instance)
 end
 
 function CreateModule.Instance(instance, properties)
-    local success, CreatedInstance = pcall(Instance.new, instance)
-    if success then
-        for property, value in pairs(properties) do
-            pcall(function() CreatedInstance[property] = value end)
-        end
-        return CreatedInstance
+    local CreatedInstance = Instance.new(instance)
+    for property, value in pairs(properties) do
+        CreatedInstance[property] = value
     end
-    return nil
+    return CreatedInstance
 end
 
 function Library.Main(Name)
-    pcall(function()
-        for _, v in pairs(game.CoreGui:GetChildren()) do
-            if v.Name == "DarkSquareLib" then
-                v:Destroy()
-            end
+    for _, v in pairs(game.CoreGui:GetChildren()) do
+        if v.Name == "DarkSquareLib" then
+            v:Destroy()
         end
-    end)
+    end
 
     local DarkSquareLib = CreateModule.Instance("ScreenGui", {
         Name = "DarkSquareLib",
         Parent = game.CoreGui,
         ResetOnSpawn = false
     })
-
-    if not DarkSquareLib then return end
 
     local MainFrame = CreateModule.Instance("Frame", {
         Name = "MainFrame",
@@ -68,8 +61,6 @@ function Library.Main(Name)
         Visible = false,
         ZIndex = 3
     })
-
-    if not MainFrame then return end
 
     CreateModule.Instance("UICorner", {
         Parent = MainFrame,
@@ -100,8 +91,6 @@ function Library.Main(Name)
         ZIndex = 4
     })
 
-    if not Title then return end
-
     local TitleLine = CreateModule.Instance("Frame", {
         Parent = MainFrame,
         Name = "TitleLine",
@@ -111,8 +100,6 @@ function Library.Main(Name)
         Size = UDim2.new(1, 0, 0, 1),
         ZIndex = 3
     })
-
-    if not TitleLine then return end
 
     local Container = CreateModule.Instance("ScrollingFrame", {
         Parent = MainFrame,
@@ -128,8 +115,6 @@ function Library.Main(Name)
         ZIndex = 3
     })
 
-    if not Container then return end
-
     local ElementList = CreateModule.Instance("UIListLayout", {
         Parent = Container,
         Padding = UDim.new(0, 5),
@@ -137,12 +122,8 @@ function Library.Main(Name)
         SortOrder = Enum.SortOrder.LayoutOrder
     })
 
-    if not ElementList then return end
-
-    pcall(function()
-        ElementList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Container.CanvasSize = UDim2.new(0, 0, 0, ElementList.AbsoluteContentSize.Y + 4)
-        end)
+    ElementList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Container.CanvasSize = UDim2.new(0, 0, 0, ElementList.AbsoluteContentSize.Y + 4)
     end)
 
     local isDraggingUI = false
@@ -156,100 +137,84 @@ function Library.Main(Name)
     local decay = 0.95
     local minVelocity = 5
 
-    pcall(function()
-        Title.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch then
-                isDraggingUI = true
-                dragStartPos = input.Position
-                dragStartFramePos = MainFrame.Position
-            end
-        end)
+    Title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDraggingUI = true
+            dragStartPos = input.Position
+            dragStartFramePos = MainFrame.Position
+        end
     end)
 
-    pcall(function()
-        Title.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch and isDraggingUI then
-                local delta = input.Position - dragStartPos
-                local newPos = UDim2.new(
-                    dragStartFramePos.X.Scale,
-                    dragStartFramePos.X.Offset + delta.X,
-                    dragStartFramePos.Y.Scale,
-                    dragStartFramePos.Y.Offset + delta.Y
-                )
-                MainFrame.Position = newPos
-            end
-        end)
+    Title.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and isDraggingUI then
+            local delta = input.Position - dragStartPos
+            local newPos = UDim2.new(
+                dragStartFramePos.X.Scale,
+                dragStartFramePos.X.Offset + delta.X,
+                dragStartFramePos.Y.Scale,
+                dragStartFramePos.Y.Offset + delta.Y
+            )
+            MainFrame.Position = newPos
+        end
     end)
 
-    pcall(function()
-        Title.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch then
-                isDraggingUI = false
-                dragStartPos = nil
-                dragStartFramePos = nil
-獻        end)
+    Title.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDraggingUI = false
+            dragStartPos = nil
+            dragStartFramePos = nil
+        end
     end)
 
-    pcall(function()
-        Container.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch and not isDraggingUI then
-                isScrolling = true
-                lastTouchPos = input.Position.Y
-                velocity = 0
-            end
-        end)
+    Container.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and not isDraggingUI then
+            isScrolling = true
+            lastTouchPos = input.Position.Y
+            velocity = 0
+        end
     end)
 
-    pcall(function()
-        Container.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch and isScrolling then
-                local currentTouchPos = input.Position.Y
-                lastDelta = (lastTouchPos - currentTouchPos) * scrollSpeed
-                local newCanvasPos = Container.CanvasPosition.Y + lastDelta
-                newCanvasPos = math.clamp(newCanvasPos, 0, math.max(0, Container.CanvasSize.Y.Offset - Container.AbsoluteSize.Y))
-                Container.CanvasPosition = Vector2.new(0, newCanvasPos)
-                velocity = lastDelta
-                lastTouchPos = currentTouchPos
-            end
-        end)
+    Container.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and isScrolling then
+            local currentTouchPos = input.Position.Y
+            lastDelta = (lastTouchPos - currentTouchPos) * scrollSpeed
+            local newCanvasPos = Container.CanvasPosition.Y + lastDelta
+            newCanvasPos = math.clamp(newCanvasPos, 0, math.max(0, Container.CanvasSize.Y.Offset - Container.AbsoluteSize.Y))
+            Container.CanvasPosition = Vector2.new(0, newCanvasPos)
+            velocity = lastDelta
+            lastTouchPos = currentTouchPos
+        end
     end)
 
-    pcall(function()
-        Container.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch then
-                isScrolling = false
-                lastTouchPos = nil
-                if math.abs(velocity) > minVelocity then
-                    spawn(function()
-                        while math.abs(velocity) > minVelocity and not isScrolling do
-                            local newCanvasPos = Container.CanvasPosition.Y + velocity
-                            newCanvasPos = math.clamp(newCanvasPos, 0, math.max(0, Container.CanvasSize.Y.Offset - Container.AbsoluteSize.Y))
-                            Container.CanvasPosition = Vector2.new(0, newCanvasPos)
-                            velocity = velocity * decay
-                            wait()
-                        end
-                        pcall(function()
-                            TweenService:Create(Container, TweenInfo.new(0.2), {CanvasPosition = Vector2.new(0, math.clamp(Container.CanvasPosition.Y, 0, math.max(0, Container.CanvasSize.Y.Offset - Container.AbsoluteSize.Y)))}):Play()
-                        end)
-                    end)
-                end
+    Container.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isScrolling = false
+            lastTouchPos = nil
+            if math.abs(velocity) > minVelocity then
+                spawn(function()
+                    while math.abs(velocity) > minVelocity and not isScrolling do
+                        local newCanvasPos = Container.CanvasPosition.Y + velocity
+                        newCanvasPos = math.clamp(newCanvasPos, 0, math.max(0, Container.CanvasSize.Y.Offset - Container.AbsoluteSize.Y))
+                        Container.CanvasPosition = Vector2.new(0, newCanvasPos)
+                        velocity = velocity * decay
+                        wait()
+                    end
+                    local finalPos = math.clamp(Container.CanvasPosition.Y, 0, math.max(0, Container.CanvasSize.Y.Offset - Container.AbsoluteSize.Y))
+                    TweenService:Create(Container, TweenInfo.new(0.2), {CanvasPosition = Vector2.new(0, finalPos)}):Play()
+                end)
             end
-        end)
+        end
     end)
 
-    pcall(function()
-        InputService.InputBegan:Connect(function(input, IsTyping)
-            if input.KeyCode == Enum.KeyCode[Library.Theme.HideKey] and not IsTyping then
-                MainFrame.Visible = not MainFrame.Visible
-            end
-        end)
+    InputService.InputBegan:Connect(function(input, IsTyping)
+        if input.KeyCode == Enum.KeyCode[Library.Theme.HideKey] and not IsTyping then
+            MainFrame.Visible = not MainFrame.Visible
+        end
     end)
 
     spawn(function()
         wait(0.2)
-        pcall(function()
-            MainFrame.Visible = true
-        end)
+        MainFrame.Visible = true
     end)
 
     local InMain = {}
@@ -269,8 +234,6 @@ function Library.Main(Name)
             AutoButtonColor = false,
             ZIndex = 3
         })
-
-        if not Checkbox then return end
 
         CreateModule.Instance("TextLabel", {
             Parent = Checkbox,
@@ -293,8 +256,6 @@ function Library.Main(Name)
             Value = config.Default or false
         })
 
-        if not IsActive then return end
-
         local CheckFrame = CreateModule.Instance("Frame", {
             Parent = Checkbox,
             Name = "CheckFrame",
@@ -304,8 +265,6 @@ function Library.Main(Name)
             Size = UDim2.new(0, 20, 0, 20),
             ZIndex = 3
         })
-
-        if not CheckFrame then return end
 
         local CheckFrameInner = CreateModule.Instance("Frame", {
             Parent = CheckFrame,
@@ -318,8 +277,6 @@ function Library.Main(Name)
             ZIndex = 3
         })
 
-        if not CheckFrameInner then return end
-
         local CheckStroke = CreateModule.Instance("UIStroke", {
             Parent = CheckFrame,
             Name = "Stroke",
@@ -327,8 +284,6 @@ function Library.Main(Name)
             Color = Library.Theme.ElementBorder,
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
-
-        if not CheckStroke then return end
 
         local CheckMark = CreateModule.Instance("ImageLabel", {
             Parent = CheckFrame,
@@ -343,38 +298,20 @@ function Library.Main(Name)
             ZIndex = 3
         })
 
-        if not CheckMark then return end
+        CheckMark.Visible = IsActive.Value
 
-        pcall(function()
+        IsActive.Changed:Connect(function()
             CheckMark.Visible = IsActive.Value
-        end)
-
-        pcall(function()
-            IsActive.Changed:Connect(function()
-                CheckMark.Visible = IsActive.Value
-                if IsActive.Value then
-                    CheckStroke.Transparency = 1
-                    pcall(function()
-                        TweenService:Create(CheckFrameInner, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
-                    end)
-                    pcall(function()
-                        TweenService:Create(CheckMark, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
-                    end)
-                else
-                    CheckStroke.Transparency = 0
-                    pcall(function()
-                        TweenService:Create(CheckFrameInner, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
-                    end)
-                    pcall(function()
-                        TweenService:Create(CheckMark, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
-                    end)
-                end
-                spawn(function()
-                    pcall(function()
-                        config.Callback(IsActive.Value)
-                    end)
-                end)
-            end)
+            if IsActive.Value then
+                CheckStroke.Transparency = 1
+                TweenService:Create(CheckFrameInner, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+                TweenService:Create(CheckMark, TweenInfo.new(0.2), {ImageTransparency = 0}):Play()
+            else
+                CheckStroke.Transparency = 0
+                TweenService:Create(CheckFrameInner, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+                TweenService:Create(CheckMark, TweenInfo.new(0.2), {ImageTransparency = 1}):Play()
+            end
+            spawn(function() config.Callback(IsActive.Value) end)
         end)
 
         local touchStartTime = 0
@@ -382,27 +319,23 @@ function Library.Main(Name)
         local maxTouchTime = 0.3
         local maxTouchDistance = 10
 
-        pcall(function()
-            Checkbox.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    touchStartTime = tick()
-                    touchStartPos = input.Position
-                end
-            end)
+        Checkbox.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                touchStartTime = tick()
+                touchStartPos = input.Position
+            end
         end)
 
-        pcall(function()
-            Checkbox.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    local touchEndTime = tick()
-                    local touchEndPos = input.Position
-                    local touchDuration = touchEndTime - touchStartTime
-                    local touchDistance = (touchEndPos - touchStartPos).Magnitude
-                    if touchDuration <= maxTouchTime and touchDistance <= maxTouchDistance then
-                        IsActive.Value = not IsActive.Value
-                    end
+        Checkbox.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                local touchEndTime = tick()
+                local touchEndPos = input.Position
+                local touchDuration = touchEndTime - touchStartTime
+                local touchDistance = (touchEndPos - touchStartPos).Magnitude
+                if touchDuration <= maxTouchTime and touchDistance <= maxTouchDistance then
+                    IsActive.Value = not IsActive.Value
                 end
-            end)
+            end
         end)
 
         AddToReg(Checkbox)
@@ -425,8 +358,6 @@ function Library.Main(Name)
             TextXAlignment = Enum.TextXAlignment.Center,
             ZIndex = 3
         })
-
-        if not Label then return end
 
         CreateModule.Instance("UICorner", {
             Parent = Label,
@@ -464,8 +395,6 @@ function Library.Main(Name)
             ZIndex = 3
         })
 
-        if not Button then return end
-
         CreateModule.Instance("UICorner", {
             Parent = Button,
             Name = "Corner",
@@ -485,37 +414,25 @@ function Library.Main(Name)
         local maxTouchTime = 0.3
         local maxTouchDistance = 10
 
-        pcall(function()
-            Button.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    touchStartTime = tick()
-                    touchStartPos = input.Position
-                    pcall(function()
-                        TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Library.Theme.Accent, BackgroundTransparency = 0}):Play()
-                    end)
-                end
-            end)
+        Button.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                touchStartTime = tick()
+                touchStartPos = input.Position
+                TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Library.Theme.Accent, BackgroundTransparency = 0}):Play()
+            end
         end)
 
-        pcall(function()
-            Button.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Touch then
-                    local touchEndTime = tick()
-                    local touchEndPos = input.Position
-                    local touchDuration = touchEndTime - touchStartTime
-                    local touchDistance = (touchEndPos - touchStartPos).Magnitude
-                    pcall(function()
-                        TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Library.Theme.Element, BackgroundTransparency = Library.Theme.ElementTransparency}):Play()
-                    end)
-                    if touchDuration <= maxTouchTime and touchDistance <= maxTouchDistance then
-                        spawn(function()
-                            pcall(function()
-                                config.Callback()
-                            end)
-                        end)
-                    end
+        Button.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                local touchEndTime = tick()
+                local touchEndPos = input.Position
+                local touchDuration = touchEndTime - touchStartTime
+                local touchDistance = (touchEndPos - touchStartPos).Magnitude
+                TweenService:Create(Button, TweenInfo.new(0.3), {BackgroundColor3 = Library.Theme.Element, BackgroundTransparency = Library.Theme.ElementTransparency}):Play()
+                if touchDuration <= maxTouchTime and touchDistance <= maxTouchDistance then
+                    spawn(function() config.Callback() end)
                 end
-            end)
+            end
         end)
 
         AddToReg(Button)
@@ -532,8 +449,6 @@ function Library.Main(Name)
             Size = UDim2.new(0.95, 0, 0, 30),
             ZIndex = 3
         })
-
-        if not Input then return end
 
         CreateModule.Instance("TextLabel", {
             Parent = Input,
@@ -567,8 +482,6 @@ function Library.Main(Name)
             ZIndex = 3
         })
 
-        if not TextBox then return end
-
         CreateModule.Instance("UICorner", {
             Parent = TextBox,
             Name = "Corner",
@@ -583,16 +496,10 @@ function Library.Main(Name)
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         })
 
-        pcall(function()
-            TextBox.FocusLost:Connect(function(enterPressed)
-                if enterPressed then
-                    spawn(function()
-                        pcall(function()
-                            config.Callback(TextBox.Text)
-                        end)
-                    end)
-                end
-            end)
+        TextBox.FocusLost:Connect(function(enterPressed)
+            if enterPressed then
+                spawn(function() config.Callback(TextBox.Text) end)
+            end
         end)
 
         AddToReg(Input)
