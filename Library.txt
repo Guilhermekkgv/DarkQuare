@@ -73,42 +73,18 @@ function Library.Main(Name)
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     })
 
-    local TitleBar = CreateModule.Instance("Frame", {
-        Parent = MainFrame,
-        Name = "TitleBar",
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 0, 40),
-        ZIndex = 4
-    })
-
     local Title = CreateModule.Instance("TextLabel", {
-        Parent = TitleBar,
+        Parent = MainFrame,
         Name = "Title",
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         Position = UDim2.new(0, 0, 0, 5),
-        Size = UDim2.new(1, -40, 0, 30),
+        Size = UDim2.new(1, 0, 0, 30),
         Font = Enum.Font[Library.Theme.Font],
         Text = Name,
         TextColor3 = Library.Theme.FontColor,
         TextSize = 18,
         TextXAlignment = Enum.TextXAlignment.Center,
-        ZIndex = 4
-    })
-
-    local ToggleButton = CreateModule.Instance("TextButton", {
-        Parent = TitleBar,
-        Name = "ToggleButton",
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Position = UDim2.new(1, -35, 0, 5),
-        Size = UDim2.new(0, 30, 0, 30),
-        Font = Enum.Font[Library.Theme.Font],
-        Text = "▼",
-        TextColor3 = Library.Theme.FontColor,
-        TextSize = 20,
         ZIndex = 4
     })
 
@@ -146,32 +122,6 @@ function Library.Main(Name)
 
     ElementList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         Container.CanvasSize = UDim2.new(0, 0, 0, ElementList.AbsoluteContentSize.Y + 4)
-    end)
-
-    local IsOpen = true
-
-    local function ToggleLibrary()
-        IsOpen = not IsOpen
-        if IsOpen then
-            ToggleButton.Text = "▼"
-            TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 300, 0, 300)}):Play()
-            TweenService:Create(Container, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 1, -50)}):Play()
-            TweenService:Create(Container, TweenInfo.new(0.3), {CanvasPosition = Vector2.new(0, 0)}):Play()
-            Container.Visible = true
-            TitleLine.Visible = true
-        else
-            ToggleButton.Text = "◄"
-            TweenService:Create(MainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 300, 0, 40)}):Play()
-            TweenService:Create(Container, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 0, 0)}):Play()
-            Container.Visible = false
-            TitleLine.Visible = false
-        end
-    end
-
-    ToggleButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            ToggleLibrary()
-        end
     end)
 
     InputService.InputBegan:Connect(function(input, IsTyping)
