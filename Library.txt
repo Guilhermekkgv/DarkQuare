@@ -2,6 +2,7 @@ local TweenService = game:GetService("TweenService")
 local InputService = game:GetService("UserInputService")
 
 local Library = {
+    Version = "1.1.0",
     Theme = {
         Font = "GothamBlack",
         Accent = Color3.fromRGB(72, 138, 182),
@@ -83,7 +84,7 @@ function Library.Main(Name)
         Position = UDim2.new(0, 0, 0, 5),
         Size = UDim2.new(1, 0, 0, 30),
         Font = Enum.Font[Library.Theme.Font],
-        Text = Name,
+        Text = Name .. " v" .. Library.Version,
         TextColor3 = Library.Theme.FontColor,
         TextSize = 18,
         TextXAlignment = Enum.TextXAlignment.Center,
@@ -109,9 +110,8 @@ function Library.Main(Name)
         Size = UDim2.new(1, -20, 1, -50),
         CanvasSize = UDim2.new(0, 0, 0, 0),
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
-        ScrollBarThickness = 3,
-        ScrollBarImageTransparency = 0.9,
-        ScrollBarImageColor3 = Library.Theme.FontColor,
+        ScrollBarThickness = 0,
+        ScrollingEnabled = false,
         ZIndex = 3
     })
 
@@ -124,6 +124,35 @@ function Library.Main(Name)
 
     ElementList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         Container.CanvasSize = UDim2.new(0, 0, 0, ElementList.AbsoluteContentSize.Y + 4)
+    end)
+
+    local isDragging = false
+    local lastTouchPos = nil
+    local scrollSpeed = 2
+
+    Container.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = true
+            lastTouchPos = input.Position.Y
+        end
+    end)
+
+    Container.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and isDragging then
+            local currentTouchPos = input.Position.Y
+            local delta = (lastTouchPos - currentTouchPos) * scrollSpeed
+            local newCanvasPos = Container.CanvasPosition.Y + delta
+            newCanvasPos = math.clamp(newCanvasPos, 0, math.max(0, Container.CanvasSize.Y.Offset - Container.AbsoluteSize.Y))
+            Container.CanvasPosition = Vector2.new(0, newCanvasPos)
+            lastTouchPos = currentTouchPos
+        end
+    end)
+
+    Container.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = false
+            lastTouchPos = nil
+        end
     end)
 
     InputService.InputBegan:Connect(function(input, IsTyping)
